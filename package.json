@@ -32,6 +32,9 @@
     "/android",
     "*.podspec"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepare": "husky install && yarn build",
     "clean": "rm -rf node_modules",
