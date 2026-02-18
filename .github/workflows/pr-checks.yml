@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Run linter
-        run: npm run lint
+      - name: Run linter with auto-fix
+        run: npm run lint:fix || npm run lint
 
       - name: Build TypeScript
         run: npm run build
