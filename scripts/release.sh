@@ -51,15 +51,15 @@ git pull origin $CURRENT_BRANCH
 
 # Run tests
 echo -e "${YELLOW}Running tests...${NC}"
-yarn test --passWithNoTests
+npm test -- --passWithNoTests
 
 # Run linter
 echo -e "${YELLOW}Running linter...${NC}"
-yarn lint
+npm run lint
 
 # Build
 echo -e "${YELLOW}Building package...${NC}"
-yarn build
+npm run build
 
 # Get current version
 CURRENT_VERSION=$(node -p "require('./package.json').version")

@@ -32,10 +32,10 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Build library
-        run: yarn build
+        run: npm run build
 
       - name: Create documentation site
         run: |

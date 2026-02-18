@@ -21,13 +21,13 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Run linter
-        run: yarn lint
+        run: npm run lint
 
       - name: Build TypeScript
-        run: yarn build
+        run: npm run build
 
       - name: Check for build artifacts
         run: |
@@ -50,7 +50,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci
 
       - name: Run tests
-        run: yarn test --passWithNoTests
+        run: npm test -- --passWithNoTests
