@@ -1,0 +1,12 @@
+{
+  "cxxNamespace": ["margelo", "audiowaveform"],
+  "ios": {
+    "iosModuleName": "AudioWaveform"
+  },
+  "android": {
+    "packageName": "com.audiowaveform",
+    "androidNamespace": ["com", "audiowaveform"],
+    "androidCxxLibName": "AudioWaveform"
+  },
+  "autolinking": {}
+}
