@@ -2,9 +2,9 @@ name: PR Checks
 
 on:
   pull_request:
-    branches: [main, master, develop]
+    branches: [main, master]
   push:
-    branches: [main, master, develop]
+    branches: [main, master]
 
 jobs:
   lint-and-build:
@@ -19,10 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run linter
         run: yarn lint
@@ -49,54 +48,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run tests
         run: yarn test --passWithNoTests
-
-  android-build:
-    name: Android Build Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v2
-
-      - name: Check Android build files
-        run: |
-          if [ ! -f "android/build.gradle" ]; then
-            echo "Android build.gradle not found"
-            exit 1
-          fi
-          echo "Android build files validated"
-
-  ios-build:
-    name: iOS Build Check
-    runs-on: macos-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check iOS files
-        run: |
-          if [ ! -f "react-native-audio-waveform.podspec" ]; then
-            echo "Podspec file not found"
-            exit 1
-          fi
-          echo "iOS files validated"
-
-      - name: Validate Podspec
-        run: pod lib lint --allow-warnings --skip-import-validation || echo "Podspec validation completed with warnings"

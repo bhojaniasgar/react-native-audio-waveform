@@ -4,6 +4,7 @@
   "description": "A React Native component to show audio waveform with ease in react native application",
   "main": "lib/index",
   "types": "lib/index.d.ts",
+  "license": "MIT",
   "contributors": [],
   "author": "Asgar Bhojani",
   "repository": {
