@@ -118,7 +118,7 @@ jobs:
 
       - name: Publish to NPM
         if: steps.check-remote-tag.outputs.exists == 'false'
-        run: npm publish
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
