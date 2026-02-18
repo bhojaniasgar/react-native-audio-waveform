@@ -85,7 +85,9 @@ function PlayerComponent() {
 }
 ```
 
-## 📖 API Documentation
+## Website
+  https://bhojaniasgar.github.io/react-native-audio-waveform/
+## 📖 API Documentation 
 
 ### Hooks
 
