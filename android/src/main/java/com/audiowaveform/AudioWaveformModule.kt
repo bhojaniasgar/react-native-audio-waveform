@@ -43,12 +43,12 @@ class AudioWaveformModule(context: ReactApplicationContext) : ReactContextBaseJa
 
     @ReactMethod
     fun checkHasAudioRecorderPermission(promise: Promise) {
-        audioRecorder.checkPermission(currentActivity, promise)
+        audioRecorder.checkPermission(reactApplicationContext.currentActivity, promise)
     }
 
     @ReactMethod
     fun getAudioRecorderPermission(promise: Promise) {
-        audioRecorder.getPermission(currentActivity, promise)
+        audioRecorder.getPermission(reactApplicationContext.currentActivity, promise)
     }
 
     @ReactMethod
@@ -319,7 +319,7 @@ class AudioWaveformModule(context: ReactApplicationContext) : ReactContextBaseJa
         }
 
         if (path == null) {
-            val outputDir = currentActivity?.cacheDir
+            val outputDir = reactApplicationContext.currentActivity?.cacheDir
             val date = SimpleDateFormat(Constants.fileNameFormat, Locale.US).format(Date())
             try {
                 val file = File.createTempFile(date, ".m4a", outputDir)
