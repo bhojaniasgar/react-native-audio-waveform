@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Waveform — React Native Library</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;1,9..40,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink: #0a0a0a;
+            --paper: #f5f0e8;
+            --warm: #e8e0d0;
+            --accent: #ff4d00;
+            --accent2: #0038ff;
+            --muted: #7a7060;
+            --border: #c8bfaa;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom cursor */
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            position: fixed;
+            top: 0; left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            mix-blend-mode: multiply;
+        }
+        .cursor-ring {
+            width: 36px; height: 36px;
+            border: 1.5px solid var(--ink);
+            border-radius: 50%;
+            position: fixed;
+            top: 0; left: 0;
+            pointer-events: none;
+            z-index: 9998;
+            transition: transform 0.18s ease, width 0.3s, height 0.3s;
+        }
+        .cursor-ring.hovered {
+            width: 60px; height: 60px;
+            border-color: var(--accent);
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 48px;
+            background: var(--paper);
+            border-bottom: 1px solid var(--border);
+            mix-blend-mode: normal;
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none; color: var(--ink);
+        }
+
+        .nav-logo .dot {
+            width: 8px; height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+        }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 36px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--ink); }
+
+        .nav-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 6px 14px;
+            border-radius: 2px;
+            letter-spacing: 0.05em;
+            text-decoration: none;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding-top: 80px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero-left {
+            padding: 80px 48px 80px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .hero-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 28px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .hero-tag::before {
+            content: '';
+            display: block;
+            width: 28px; height: 1px;
+            background: var(--accent);
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(3.5rem, 5vw, 5.5rem);
+            line-height: 0.95;
+            letter-spacing: -0.04em;
+            margin-bottom: 32px;
+        }
+
+        h1 em {
+            font-style: italic;
+            font-weight: 400;
+            color: var(--muted);
+        }
+
+        .hero-desc {
+            font-size: 1.05rem;
+            color: var(--muted);
+            max-width: 380px;
+            line-height: 1.75;
+            margin-bottom: 48px;
+            font-weight: 300;
+        }
+
+        .hero-actions {
+            display: flex; gap: 14px; align-items: center;
+        }
+
+        .btn-dark {
+            background: var(--ink);
+            color: var(--paper);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 2px;
+            transition: background 0.2s, transform 0.15s;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .btn-dark:hover {
+            background: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--ink);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 2px;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--ink);
+            transform: translateY(-1px);
+        }
+
+        /* Hero right — live waveform demo */
+        .hero-right {
+            background: var(--ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-right::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 70% 30%, #1a0a00 0%, transparent 60%),
+                        radial-gradient(circle at 30% 80%, #000820 0%, transparent 50%);
+        }
+
+        .demo-card {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .demo-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            letter-spacing: 0.12em;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .phone-frame {
+            background: #111;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            padding: 32px 24px;
+            position: relative;
+        }
+
+        .phone-notch {
+            width: 80px; height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            margin: 0 auto 24px;
+        }
+
+        .waveform-container {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 80px;
+            margin-bottom: 20px;
+        }
+
+        .bar {
+            flex: 1;
+            background: #ff4d00;
+            border-radius: 2px;
+            transform-origin: center;
+            animation: wave 1.4s ease-in-out infinite;
+            opacity: 0.85;
+        }
+
+        .bar.played {
+            background: #ff4d00;
+            opacity: 1;
+        }
+
+        .bar.unplayed {
+            background: rgba(255,77,0,0.25);
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(var(--min)); }
+            50% { transform: scaleY(var(--max)); }
+        }
+
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+        }
+
+        .play-btn {
+            width: 44px; height: 44px;
+            background: #ff4d00;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: none;
+            cursor: none;
+            transition: transform 0.15s, background 0.2s;
+        }
+
+        .play-btn:hover { transform: scale(1.08); background: #ff6620; }
+
+        .play-btn svg { margin-left: 2px; }
+
+        .time-info {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.06em;
+        }
+
+        .speed-badge {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: #ff4d00;
+            border: 1px solid rgba(255,77,0,0.4);
+            padding: 4px 10px;
+            border-radius: 2px;
+        }
+
+        /* Recording indicator */
+        .rec-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .rec-dot {
+            width: 8px; height: 8px;
+            background: #ff4d00;
+            border-radius: 50%;
+            animation: rec-pulse 1.2s infinite;
+        }
+
+        @keyframes rec-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.8); }
+        }
+
+        .rec-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .rec-time {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            margin-left: auto;
+        }
+
+        /* Scrolling ticker */
+        .ticker-wrap {
+            overflow: hidden;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--ink);
+            padding: 12px 0;
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 0;
+            animation: ticker 22s linear infinite;
+            white-space: nowrap;
+        }
+
+        .ticker-item {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--paper);
+            padding: 0 40px;
+        }
+
+        .ticker-item span {
+            color: var(--accent);
+            margin-right: 40px;
+        }
+
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Stats strip */
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat {
+            padding: 40px 48px;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat:last-child { border-right: none; }
+
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 2.8rem;
+            letter-spacing: -0.04em;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        /* Features */
+        .features-section {
+            padding: 100px 48px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 72px;
+            align-items: end;
+        }
+
+        .section-tag {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .section-tag::before {
+            content: '';
+            display: block; width: 20px; height: 1px;
+            background: var(--accent);
+        }
+
+        h2 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2.5rem, 4vw, 3.8rem);
+            letter-spacing: -0.04em;
+            line-height: 0.95;
+        }
+
+        .section-note {
+            font-size: 1rem;
+            color: var(--muted);
+            line-height: 1.75;
+            font-weight: 300;
+            align-self: end;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0;
+            border: 1px solid var(--border);
+        }
+
+        .feat {
+            padding: 40px;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feat:hover { background: var(--warm); }
+
+        .feat::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 0; height: 2px;
+            background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
+        .feat:hover::after { width: 100%; }
+
+        .feat-num {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: var(--border);
+            letter-spacing: 0.1em;
+            margin-bottom: 24px;
+        }
+
+        .feat-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .feat h3 {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 10px;
+        }
+
+        .feat p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.65;
+            font-weight: 300;
+        }
+
+        /* Install section */
+        .install-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .install-left {
+            padding: 80px 48px;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .install-right {
+            padding: 80px 48px;
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .code-block {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+
+        .code-block .cmt { color: #555; }
+        .code-block .kw { color: #ff4d00; }
+        .code-block .fn { color: #82cfff; }
+        .code-block .str { color: #a8d8a8; }
+        .code-block .num { color: #ffd080; }
+        .code-block .tag { color: #e0a0e0; }
+        .code-block .attr { color: #82cfff; }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .code-dots {
+            display: flex; gap: 6px;
+        }
+
+        .code-dots span {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+
+        .code-dots span:nth-child(1) { background: #ff5f57; }
+        .code-dots span:nth-child(2) { background: #ffbd2e; }
+        .code-dots span:nth-child(3) { background: #28c841; }
+
+        .code-filename {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.25);
+            letter-spacing: 0.06em;
+        }
+
+        .install-cmd {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--warm);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .install-cmd .prompt {
+            color: var(--accent);
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 48px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 48px;
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .footer-brand .logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+
+        .footer-brand p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.35);
+            line-height: 1.65;
+            max-width: 260px;
+        }
+
+        .footer-col h4 {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 20px;
+        }
+
+        .footer-col ul { list-style: none; }
+
+        .footer-col li {
+            margin-bottom: 10px;
+        }
+
+        .footer-col a {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-col a:hover { color: #ff4d00; }
+
+        .footer-bottom {
+            padding: 20px 48px;
+            background: var(--ink);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .footer-bottom p {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.68rem;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 0.05em;
+        }
+
+        /* Animations */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Mobile */
+        @media (max-width: 900px) {
+            nav { padding: 18px 24px; }
+            .nav-links { display: none; }
+            .hero { grid-template-columns: 1fr; min-height: auto; }
+            .hero-left { padding: 60px 24px; }
+            .hero-right { min-height: 420px; padding: 40px 24px; }
+            .stats-strip { grid-template-columns: repeat(2, 1fr); }
+            .stat { padding: 28px 24px; }
+            .features-section { padding: 60px 24px; }
+            .section-header { grid-template-columns: 1fr; gap: 20px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .install-section { grid-template-columns: 1fr; }
+            .install-left { padding: 50px 24px; }
+            .install-right { padding: 50px 24px; }
+            footer { grid-template-columns: 1fr; padding: 48px 24px; }
+            .footer-bottom { flex-direction: column; gap: 8px; padding: 16px 24px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+    <a href="#" class="nav-logo">
+        <div class="dot"></div>
+        rnaw
+    </a>
+    <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="https://github.com/bhojaniasgar/react-native-audio-waveform">Docs</a></li>
+    </ul>
+    <a href="https://www.npmjs.com/package/@bhojaniasgar/react-native-audio-waveform" class="nav-badge">v1.0 · npm →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-left">
+        <div class="hero-tag">React Native Library</div>
+        <h1>Sound,<br><em>visualised</em><br>beautifully.</h1>
+        <p class="hero-desc">Record, play, and visualise audio in your React Native app with a library built for real products — not demos.</p>
+        <div class="hero-actions">
+            <a href="https://github.com/bhojaniasgar/react-native-audio-waveform" class="btn-dark">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.08-.74.08-.73.08-.73 1.2.08 1.83 1.23 1.83 1.23 1.06 1.82 2.79 1.29 3.47.99.1-.77.41-1.29.75-1.59-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.65.24 2.87.12 3.17.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+                GitHub
+            </a>
+            <a href="https://www.npmjs.com/package/@bhojaniasgar/react-native-audio-waveform" class="btn-ghost">npm package →</a>
+        </div>
+    </div>
+    <div class="hero-right">
+        <div class="demo-card">
+            <div class="demo-label">Live preview</div>
+            <div class="phone-frame">
+                <div class="phone-notch"></div>
+                <div class="rec-row">
+                    <div class="rec-dot"></div>
+                    <span class="rec-label">Recording</span>
+                    <span class="rec-time" id="rec-time">00:00</span>
+                </div>
+                <div class="waveform-container" id="live-waveform"></div>
+                <div style="height:1px;background:rgba(255,255,255,0.06);margin:20px 0"></div>
+                <div class="demo-label" style="margin-bottom:14px">Playback</div>
+                <div class="waveform-container" id="play-waveform"></div>
+                <div class="playback-controls">
+                    <span class="time-info" id="play-time">0:00</span>
+                    <button class="play-btn" id="play-btn">
+                        <svg id="play-icon" width="16" height="16" viewBox="0 0 24 24" fill="white">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </button>
+                    <span class="speed-badge">1.0×</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+    <div class="ticker-track">
+        <span class="ticker-item"><span>✦</span>Audio Recording</span>
+        <span class="ticker-item"><span>✦</span>Waveform Visualisation</span>
+        <span class="ticker-item"><span>✦</span>Seek Controls</span>
+        <span class="ticker-item"><span>✦</span>Speed Adjustment</span>
+        <span class="ticker-item"><span>✦</span>TypeScript Native</span>
+        <span class="ticker-item"><span>✦</span>60fps Smooth</span>
+        <span class="ticker-item"><span>✦</span>Fully Customisable</span>
+        <span class="ticker-item"><span>✦</span>MIT Licensed</span>
+        <!-- duplicate for seamless loop -->
+        <span class="ticker-item"><span>✦</span>Audio Recording</span>
+        <span class="ticker-item"><span>✦</span>Waveform Visualisation</span>
+        <span class="ticker-item"><span>✦</span>Seek Controls</span>
+        <span class="ticker-item"><span>✦</span>Speed Adjustment</span>
+        <span class="ticker-item"><span>✦</span>TypeScript Native</span>
+        <span class="ticker-item"><span>✦</span>60fps Smooth</span>
+        <span class="ticker-item"><span>✦</span>Fully Customisable</span>
+        <span class="ticker-item"><span>✦</span>MIT Licensed</span>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-strip">
+    <div class="stat fade-up">
+        <div class="stat-num">60fps</div>
+        <div class="stat-label">Animation target</div>
+    </div>
+    <div class="stat fade-up" style="transition-delay:0.1s">
+        <div class="stat-num">2KB</div>
+        <div class="stat-label">Core bundle size</div>
+    </div>
+    <div class="stat fade-up" style="transition-delay:0.2s">
+        <div class="stat-num">iOS+</div>
+        <div class="stat-label">Android support</div>
+    </div>
+    <div class="stat fade-up" style="transition-delay:0.3s">
+        <div class="stat-num">MIT</div>
+        <div class="stat-label">Open source licence</div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section class="features-section" id="features">
+    <div class="section-header">
+        <div>
+            <div class="section-tag">What's inside</div>
+            <h2>Built for<br>real apps.</h2>
+        </div>
+        <p class="section-note">Every feature was designed around production requirements — not toy demos. Customisable to your brand, optimised for every device.</p>
+    </div>
+    <div class="features-grid">
+        <div class="feat fade-up">
+            <div class="feat-num">01</div>
+            <span class="feat-icon">🎙️</span>
+            <h3>Audio Recording</h3>
+            <p>High-quality recording with live waveform feedback. See your sound as you speak.</p>
+        </div>
+        <div class="feat fade-up" style="transition-delay:0.08s">
+            <div class="feat-num">02</div>
+            <span class="feat-icon">▶️</span>
+            <h3>Playback Engine</h3>
+            <p>Full playback with seek scrubbing, speed control (0.5× → 2×), and smooth progress animation.</p>
+        </div>
+        <div class="feat fade-up" style="transition-delay:0.16s">
+            <div class="feat-num">03</div>
+            <span class="feat-icon">📊</span>
+            <h3>Waveform Rendering</h3>
+            <p>Customise candle width, spacing, colour gradients, and played/unplayed split state.</p>
+        </div>
+        <div class="feat fade-up" style="transition-delay:0.08s">
+            <div class="feat-num">04</div>
+            <span class="feat-icon">⚡</span>
+            <h3>High Performance</h3>
+            <p>Runs on a native thread. Optimised for smooth 60fps on both iOS and Android.</p>
+        </div>
+        <div class="feat fade-up" style="transition-delay:0.16s">
+            <div class="feat-num">05</div>
+            <span class="feat-icon">🎨</span>
+            <h3>Fully Customisable</h3>
+            <p>Every visual property is a prop. Plug into any design system without fighting the defaults.</p>
+        </div>
+        <div class="feat fade-up" style="transition-delay:0.24s">
+            <div class="feat-num">06</div>
+            <span class="feat-icon">💪</span>
+            <h3>TypeScript First</h3>
+            <p>Complete type definitions included. Autocomplete, strict types, no guesswork.</p>
+        </div>
+    </div>
+</section>
+
+<!-- INSTALL -->
+<section class="install-section" id="install">
+    <div class="install-left">
+        <div class="section-tag">Get started</div>
+        <h2 style="margin-bottom:24px">One command away.</h2>
+        <p style="color:var(--muted);font-weight:300;line-height:1.75;margin-bottom:40px;">Drop it into your existing project in seconds. No native configuration required for Expo managed workflow.</p>
+        <div class="install-cmd">
+            <span class="prompt">$</span>
+            <span style="font-family:'DM Mono',monospace;font-size:0.82rem;">npm install @bhojaniasgar/react-native-audio-waveform</span>
+        </div>
+        <div class="install-cmd">
+            <span class="prompt" style="color:var(--accent2);">$</span>
+            <span style="font-family:'DM Mono',monospace;font-size:0.82rem;">yarn add @bhojaniasgar/react-native-audio-waveform</span>
+        </div>
+    </div>
+    <div class="install-right">
+        <div class="code-header">
+            <div class="code-dots">
+                <span></span><span></span><span></span>
+            </div>
+            <span class="code-filename">App.tsx</span>
+        </div>
+        <div class="code-block">
+<span class="kw">import</span> { useAudioRecorder, Waveform } <span class="kw">from</span><br>
+&nbsp;&nbsp;<span class="str">'@bhojaniasgar/react-native-audio-waveform'</span>;<br>
+<br>
+<span class="kw">function</span> <span class="fn">VoiceNote</span>() {<br>
+&nbsp;&nbsp;<span class="kw">const</span> { startRecording, stopRecording } =<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">useAudioRecorder</span>();<br>
+<br>
+&nbsp;&nbsp;<span class="kw">return</span> (<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">&lt;Waveform</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="attr">path</span>={audioPath}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="attr">candleSpace</span>={<span class="num">2</span>}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="attr">candleWidth</span>={<span class="num">4</span>}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="attr">waveColor</span>=<span class="str">"#ff4d00"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="attr">playedWaveColor</span>=<span class="str">"#0038ff"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="tag">/&gt;</span><br>
+&nbsp;&nbsp;);<br>
+}<br>
+<br>
+<span class="kw">export default</span> VoiceNote;
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-brand">
+        <div class="logo">React Native<br>Audio Waveform</div>
+        <p>A focused audio library for React Native apps that need real-time waveform visualisation.</p>
+    </div>
+    <div class="footer-col">
+        <h4>Links</h4>
+        <ul>
+            <li><a href="https://github.com/bhojaniasgar/react-native-audio-waveform">GitHub Repository</a></li>
+            <li><a href="https://www.npmjs.com/package/@bhojaniasgar/react-native-audio-waveform">npm Package</a></li>
+            <li><a href="https://github.com/bhojaniasgar/react-native-audio-waveform/issues">Report an Issue</a></li>
+            <li><a href="https://github.com/bhojaniasgar/react-native-audio-waveform/blob/main/CONTRIBUTING.md">Contributing</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>Info</h4>
+        <ul>
+            <li><a href="#">MIT Licence</a></li>
+            <li><a href="https://github.com/bhojaniasgar">Asgar Bhojani</a></li>
+            <li><a href="#">Changelog</a></li>
+        </ul>
+    </div>
+</footer>
+<div class="footer-bottom">
+    <p>© 2025 React Native Audio Waveform. MIT Licence.</p>
+    <p>Built with care by Asgar Bhojani</p>
+</div>
+
+<script>
+// Custom cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 5}px, ${my - 5}px)`;
+});
+
+function animRing() {
+    rx += (mx - rx - 18) * 0.12;
+    ry += (my - ry - 18) * 0.12;
+    ring.style.transform = `translate(${rx}px, ${ry}px)`;
+    requestAnimationFrame(animRing);
+}
+animRing();
+
+document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hovered'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hovered'));
+});
+
+// Live waveform generation
+function buildWaveform(container, count, type) {
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        const h = 15 + Math.random() * 65;
+        bar.style.height = h + 'px';
+        bar.style.setProperty('--min', (0.2 + Math.random() * 0.3).toFixed(2));
+        bar.style.setProperty('--max', (0.6 + Math.random() * 0.8).toFixed(2));
+        bar.style.animationDuration = (0.8 + Math.random() * 0.8) + 's';
+        bar.style.animationDelay = (Math.random() * 0.8) + 's';
+        if (type === 'play') {
+            bar.className = 'bar ' + (i < count * 0.4 ? 'played' : 'unplayed');
+            bar.style.animation = 'none';
+        }
+        container.appendChild(bar);
+    }
+}
+
+buildWaveform(document.getElementById('live-waveform'), 48, 'live');
+buildWaveform(document.getElementById('play-waveform'), 48, 'play');
+
+// Recording timer
+let secs = 0;
+setInterval(() => {
+    secs++;
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    document.getElementById('rec-time').textContent = m + ':' + s;
+    // extend waveform live
+    const lw = document.getElementById('live-waveform');
+    if (lw.children.length > 0) {
+        const bar = lw.children[Math.floor(Math.random() * lw.children.length)];
+        const h = 15 + Math.random() * 65;
+        bar.style.height = h + 'px';
+    }
+}, 1000);
+
+// Play button mock
+let playing = false;
+let playProgress = 0.4;
+const playBtn = document.getElementById('play-btn');
+const playIcon = document.getElementById('play-icon');
+const playTime = document.getElementById('play-time');
+
+playBtn.addEventListener('click', () => {
+    playing = !playing;
+    playIcon.innerHTML = playing
+        ? '<rect x="6" y="4" width="4" height="16" fill="white"/><rect x="14" y="4" width="4" height="16" fill="white"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+});
+
+setInterval(() => {
+    if (!playing) return;
+    playProgress = Math.min(playProgress + 0.004, 1);
+    if (playProgress >= 1) { playing = false; playProgress = 0; playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; }
+    const totalSecs = 47;
+    const cur = Math.floor(playProgress * totalSecs);
+    playTime.textContent = '0:' + String(cur).padStart(2, '0');
+    const bars = document.getElementById('play-waveform').children;
+    const split = Math.floor(playProgress * bars.length);
+    for (let i = 0; i < bars.length; i++) {
+        bars[i].className = 'bar ' + (i < split ? 'played' : 'unplayed');
+    }
+}, 100);
+
+// Intersection observer for fade-up
+const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); }
+    });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
