@@ -6,10 +6,11 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
-      - '.github/**'
+      - 'docs-template/**'
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   check-version:
@@ -35,13 +36,14 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=v$VERSION" >> $GITHUB_OUTPUT
 
-      - name: Check if tag exists
-        id: check-tag
+      - name: Check for workflow changes
+        id: workflow-changes
         run: |
-          if git rev-parse "v${{ steps.package-version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          if git diff HEAD~1 HEAD --name-only | grep -q "^\.github/workflows/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "⚠️ Workflow files changed - skipping auto-release to avoid permission issues"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check if tag exists on remote
@@ -53,20 +55,28 @@ jobs:
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
+      - name: Skip if workflow changed
+        if: steps.workflow-changes.outputs.changed == 'true'
+        run: |
+          echo "⏭️ Skipping release because workflow files were modified"
+          echo "This prevents GitHub Actions permission errors"
+          echo "Push again without workflow changes to trigger release"
+          exit 0
+
       - name: Install dependencies
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         run: npm install --legacy-peer-deps
 
       - name: Run tests
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         run: npm test -- --passWithNoTests
 
       - name: Build
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         run: npm run build
 
       - name: Extract changelog
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         id: changelog
         run: |
           if [ -f "CHANGELOG.md" ]; then
@@ -78,15 +88,15 @@ jobs:
           fi
 
       - name: Create Git Tag
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v${{ steps.package-version.outputs.version }}" -m "Release v${{ steps.package-version.outputs.version }}"
-          git push origin "v${{ steps.package-version.outputs.version }}"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "v${{ steps.package-version.outputs.version }}"
 
       - name: Create GitHub Release
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.package-version.outputs.version }}
@@ -117,7 +127,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NPM
-        if: steps.check-remote-tag.outputs.exists == 'false'
+        if: steps.check-remote-tag.outputs.exists == 'false' && steps.workflow-changes.outputs.changed == 'false'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
