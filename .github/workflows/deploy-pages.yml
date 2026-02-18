@@ -40,7 +40,32 @@ jobs:
       - name: Copy documentation site
         run: |
           mkdir -p docs
+          
+          # Get package info from package.json
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_DESC=$(node -p "require('./package.json').description")
+          REPO_URL=$(node -p "require('./package.json').repository.url")
+          AUTHOR=$(node -p "require('./package.json').author")
+          
+          # Extract GitHub username and repo name from URL
+          GITHUB_REPO=$(echo $REPO_URL | sed 's/.*github.com[:/]\(.*\)\.git/\1/' | sed 's/.*github.com[:/]\(.*\)/\1/')
+          
+          # Copy and replace placeholders
           cp docs-template/index.html docs/index.html
+          
+          # Replace placeholders in the HTML
+          sed -i.bak "s|@bhojaniasgar/react-native-audio-waveform|$PACKAGE_NAME|g" docs/index.html
+          sed -i.bak "s|bhojaniasgar/react-native-audio-waveform|$GITHUB_REPO|g" docs/index.html
+          sed -i.bak "s|v1\.0\.5|v$PACKAGE_VERSION|g" docs/index.html
+          sed -i.bak "s|Asgar Bhojani|$AUTHOR|g" docs/index.html
+          
+          rm docs/index.html.bak
+          
+          echo "✅ Documentation site created with:"
+          echo "   Package: $PACKAGE_NAME"
+          echo "   Version: $PACKAGE_VERSION"
+          echo "   Repo: $GITHUB_REPO"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
