@@ -1,0 +1,130 @@
+name: Auto Release and Publish
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/**'
+
+permissions:
+  contents: write
+
+jobs:
+  check-version:
+    name: Check Version and Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Get package version
+        id: package-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check-tag
+        run: |
+          if git rev-parse "v${{ steps.package-version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if tag exists on remote
+        id: check-remote-tag
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ steps.package-version.outputs.version }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        run: npm install --legacy-peer-deps
+
+      - name: Run tests
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        run: npm test -- --passWithNoTests
+
+      - name: Build
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        run: npm run build
+
+      - name: Extract changelog
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            sed -n "/## \[${{ steps.package-version.outputs.version }}\]/,/## \[/p" CHANGELOG.md | sed '$d' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=Release version ${{ steps.package-version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Git Tag
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.package-version.outputs.version }}" -m "Release v${{ steps.package-version.outputs.version }}"
+          git push origin "v${{ steps.package-version.outputs.version }}"
+
+      - name: Create GitHub Release
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
+          body: |
+            ## Changes in v${{ steps.package-version.outputs.version }}
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ### Installation
+            ```bash
+            npm install @bhojaniasgar/react-native-audio-waveform@${{ steps.package-version.outputs.version }}
+            # or
+            yarn add @bhojaniasgar/react-native-audio-waveform@${{ steps.package-version.outputs.version }}
+            ```
+            
+            ### What's Changed
+            - Fixed compatibility with latest React Native versions (0.76+)
+            - Updated currentActivity references for proper context handling
+            - Resolved deprecation warnings in Android module
+            - Fixed linting and formatting issues
+            - Added comprehensive CI/CD pipeline
+            
+            **Full Changelog**: https://github.com/bhojaniasgar/react-native-audio-waveform/blob/main/CHANGELOG.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NPM
+        if: steps.check-remote-tag.outputs.exists == 'false'
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Skip - Version already released
+        if: steps.check-remote-tag.outputs.exists == 'true'
+        run: |
+          echo "⏭️ Version ${{ steps.package-version.outputs.version }} already released"
+          echo "Tag v${{ steps.package-version.outputs.version }} exists on remote"
+          echo "Skipping release and publish steps"

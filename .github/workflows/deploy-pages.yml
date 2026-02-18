@@ -51,20 +51,20 @@ jobs:
           # Extract GitHub username and repo name from URL
           GITHUB_REPO=$(echo $REPO_URL | sed 's/.*github.com[:/]\(.*\)\.git/\1/' | sed 's/.*github.com[:/]\(.*\)/\1/')
           
-          # Copy and replace placeholders
+          # Copy template
           cp docs-template/index.html docs/index.html
           
-          # Replace placeholders in the HTML
+          # Replace placeholders in the HTML (using | as delimiter to avoid issues with /)
           sed -i.bak "s|@bhojaniasgar/react-native-audio-waveform|$PACKAGE_NAME|g" docs/index.html
           sed -i.bak "s|bhojaniasgar/react-native-audio-waveform|$GITHUB_REPO|g" docs/index.html
-          sed -i.bak "s|v1\.0\.5|v$PACKAGE_VERSION|g" docs/index.html
+          sed -i.bak "s|VERSION_PLACEHOLDER|v$PACKAGE_VERSION|g" docs/index.html
           sed -i.bak "s|Asgar Bhojani|$AUTHOR|g" docs/index.html
           
           rm docs/index.html.bak
           
           echo "✅ Documentation site created with:"
           echo "   Package: $PACKAGE_NAME"
-          echo "   Version: $PACKAGE_VERSION"
+          echo "   Version: v$PACKAGE_VERSION"
           echo "   Repo: $GITHUB_REPO"
 
       - name: Setup Pages
