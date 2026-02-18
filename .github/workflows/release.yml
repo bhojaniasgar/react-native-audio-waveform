@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm install  --legacy-peer-deps
+
+      - name: Build
+        run: npm run build
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            sed -n "/## \[${{ steps.package-version.outputs.version }}\]/,/## \[/p" CHANGELOG.md | sed '$d' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=Release version ${{ steps.package-version.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Changes in ${{ github.ref_name }}
+            
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ### Installation
+            ```bash
+            npm install @bhojaniasgar/react-native-audio-waveform@${{ steps.package-version.outputs.version }}
+            # or
+            yarn add @bhojaniasgar/react-native-audio-waveform@${{ steps.package-version.outputs.version }}
+            ```
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

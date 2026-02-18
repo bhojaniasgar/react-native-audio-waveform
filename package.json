@@ -4,6 +4,7 @@
   "description": "A React Native component to show audio waveform with ease in react native application",
   "main": "lib/index",
   "types": "lib/index.d.ts",
+  "license": "MIT",
   "contributors": [],
   "author": "Asgar Bhojani",
   "repository": {
@@ -53,12 +54,12 @@
     "access": "public"
   },
   "scripts": {
-    "prepare": "husky install && yarn build",
+    "prepare": "husky install && npm run build",
     "clean": "rm -rf node_modules",
     "build": "rm -rf lib && tsc -p .",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' -c .eslintrc --fix ",
-    "build:local": "yarn build && yarn pack",
+    "build:local": "npm run build && npm pack",
     "test": "jest"
   },
   "peerDependencies": {
@@ -70,9 +71,10 @@
     "@babel/runtime": "^7.25.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@react-native/babel-preset": "^0.76.0",
     "@react-native-community/eslint-config": "^3.2.0",
     "@testing-library/react-native": "^13.2.0",
-    "@tsconfig/react-native": "^3.0,6",
+    "@tsconfig/react-native": "^3.0.6",
     "@types/lodash": "^4.17.20",
     "@types/react-test-renderer": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.37.0",

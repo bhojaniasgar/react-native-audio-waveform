@@ -456,7 +456,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
               playerKey: `PlayerFor${path}`,
               progress: clampedSeekAmount * songDuration,
             });
-          } catch (e) {
+          } catch {
             if (playerState === PlayerState.paused) {
               // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
               await stopPlayerAction(false);
