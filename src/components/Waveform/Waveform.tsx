@@ -58,11 +58,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     scrubColor,
     onPlayerStateChange,
     onRecorderStateChange,
-    onPanStateChange = () => {},
-    onError = (_error: Error) => {},
-    onCurrentProgressChange = () => {},
+    onPanStateChange = () => { },
+    onError = (_error: Error) => { },
+    onCurrentProgressChange = () => { },
     candleHeightScale = 3,
-    onChangeWaveformLoadState = (_state: boolean) => {},
+    onChangeWaveformLoadState = (_state: boolean) => { },
     showsHorizontalScrollIndicator = false,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
@@ -456,7 +456,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
               playerKey: `PlayerFor${path}`,
               progress: clampedSeekAmount * songDuration,
             });
-          } catch (e) {
+          } catch {
             if (playerState === PlayerState.paused) {
               // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
               await stopPlayerAction(false);
@@ -587,7 +587,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         setPanMoving(true);
         (onPanStateChange as Function)(true);
       },
-      onPanResponderStart: () => {},
+      onPanResponderStart: () => { },
       onPanResponderMove: event => {
         setSeekPosition(event.nativeEvent);
       },
