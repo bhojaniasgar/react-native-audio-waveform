@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-beta.3] - 2025-02-19
+
+### 🐛 Bug Fixes
+
+- **Fixed CMake version requirement** - Changed from specific 3.18.1 to minimum 3.10.2 for broader compatibility
+- **Removed CMake version constraint** - Allows Android SDK to use any available CMake version
+
+### 🔧 Technical Changes
+
+- Updated CMakeLists.txt to require minimum CMake 3.10.2 instead of exact 3.18.1
+- Removed CMake version specification from build.gradle externalNativeBuild
+
 ## [2.0.0-beta.2] - 2025-02-19
 
 ### 🐛 Bug Fixes

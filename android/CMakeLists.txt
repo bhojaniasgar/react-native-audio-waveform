@@ -1,5 +1,5 @@
 project(AudioWaveformNitro)
-cmake_minimum_required(VERSION 3.18.1)
+cmake_minimum_required(VERSION 3.10.2)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_CXX_STANDARD 20)

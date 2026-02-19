@@ -1,6 +1,6 @@
 {
   "name": "@bhojaniasgar/react-native-audio-waveform",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "A React Native component to show audio waveform with ease in react native application",
   "main": "lib/src/index",
   "types": "lib/src/index.d.ts",
