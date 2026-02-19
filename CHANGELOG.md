@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-beta.2] - 2025-02-19
+
+### 🐛 Bug Fixes
+
+- **Fixed Android build issue** - Removed manual Nitro Modules dependency that was causing Gradle resolution errors
+- **Added Nitrogen autolinking** - Applied autolinking gradle file for proper code generation integration
+- **Improved dependency management** - Nitro Modules now resolved via autolinking instead of Maven repositories
+
+### 🔧 Technical Changes
+
+- Removed `com.margelo.nitro:nitro-modules` manual dependency from Android build.gradle
+- Applied `AudioWaveform+autolinking.gradle` for proper Nitrogen integration
+- Nitro Modules dependencies now handled automatically through React Native's build system
+
 ## [2.0.0-beta.1] - 2025-02-19
 
 ### 🚀 Major Release - Nitro Modules Migration
