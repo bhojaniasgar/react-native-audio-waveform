@@ -1,0 +1,37 @@
+{
+  "entryPoints": ["specs"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api",
+  "name": "React Native Audio Waveform API",
+  "readme": "README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Factory",
+    "Audio Recording",
+    "Audio Playback",
+    "Waveform Extraction",
+    "*"
+  ],
+  "sort": ["source-order"],
+  "plugin": [],
+  "theme": "default",
+  "navigationLinks": {
+    "GitHub": "https://github.com/bhojaniasgar/react-native-audio-waveform",
+    "npm": "https://www.npmjs.com/package/@bhojaniasgar/react-native-audio-waveform"
+  },
+  "sidebarLinks": {
+    "Documentation": "https://bhojaniasgar.github.io/react-native-audio-waveform/",
+    "Report Issue": "https://github.com/bhojaniasgar/react-native-audio-waveform/issues"
+  },
+  "hideGenerator": false,
+  "searchInComments": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  }
+}

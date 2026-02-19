@@ -63,7 +63,9 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint 'src/**/*.{js,jsx,ts,tsx}' -c .eslintrc --fix ",
     "build:local": "npm run build && npm pack",
-    "test": "jest"
+    "test": "jest",
+    "docs": "typedoc",
+    "docs:serve": "npm run docs && npx http-server docs/api -p 8080 -o"
   },
   "peerDependencies": {
     "react": "*",
@@ -93,6 +95,7 @@
     "react": "19.1.0",
     "react-native": "0.80.1",
     "react-test-renderer": "19.1.0",
+    "typedoc": "^0.28.17",
     "typescript": "5.0.4"
   },
   "husky": {

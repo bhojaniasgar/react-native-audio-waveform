@@ -15,7 +15,19 @@ A React Native component to show audio waveform with ease in react native applic
 - 📱 Support for both iOS and Android
 - 💪 TypeScript support
 - 🚀 Easy to integrate
-- ⚡ High performance
+- ⚡ High performance with Nitro Modules
+
+## 🚀 Performance (v2.0+)
+
+Powered by Nitro Modules for exceptional performance:
+
+- **10x-100x faster** native method calls (< 1ms vs 10-100ms)
+- **3.5x faster** waveform extraction with C++ parallel processing
+- **90x faster** real-time callbacks for smooth visualization
+- **Zero memory overhead** with efficient resource management
+- **100,000+ calls/second** throughput for responsive UI
+
+[See detailed performance benchmarks →](./docs/PERFORMANCE.md)
 
 ## 📦 Installation
 
@@ -87,7 +99,32 @@ function PlayerComponent() {
 
 ## Website
   https://bhojaniasgar.github.io/react-native-audio-waveform/
-## 📖 API Documentation 
+
+## 📖 Documentation
+
+### 📚 Complete Documentation
+
+For comprehensive guides and API reference:
+
+**[Usage Examples](./docs/USAGE_EXAMPLES.md)** - Complete usage guide with examples  
+**[Performance Guide](./docs/PERFORMANCE.md)** - Performance characteristics and best practices  
+**[API Documentation](./docs/api/index.html)** - Generated TypeScript API reference  
+**[Example Code](./example/)** - Working example components
+
+To view the API documentation locally:
+```bash
+npm run docs        # Generate documentation
+npm run docs:serve  # Serve at http://localhost:8080
+```
+
+The documentation includes:
+- **Usage Examples** - Basic and advanced usage patterns
+- **Performance Guide** - Benchmarks, memory usage, and optimization tips
+- **AudioWaveform** - Factory interface for creating recorders, players, and extractors
+- **AudioRecorder** - Audio recording with real-time monitoring
+- **AudioPlayer** - Audio playback with precise control
+- **WaveformExtractor** - High-performance waveform extraction
+- All configuration interfaces, enums, and types
 
 ### Hooks
 

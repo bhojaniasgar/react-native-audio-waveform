@@ -328,26 +328,26 @@
 ## Phase 7: Documentation
 
 ### 17. API Documentation
-- [~] 17.1 Generate API docs from TypeScript
+- [x] 17.1 Generate API docs from TypeScript
   - Set up documentation generator
   - Generate HTML docs
   - Review for completeness
-- [~] 17.2 Write usage examples
+- [x] 17.2 Write usage examples
   - Basic recording example
   - Basic playback example
   - Waveform extraction example
   - Advanced usage patterns
-- [~] 17.3 Document performance characteristics
+- [x] 17.3 Document performance characteristics
   - Document performance improvements
   - Document memory usage
   - Document best practices
-- [~] 17.4 Create troubleshooting guide
+- [x] 17.4 Create troubleshooting guide
   - Common issues and solutions
   - Platform-specific issues
   - Debugging tips
 
 ### 18. Migration Guide
-- [~] 18.1 Write migration overview
+- [x] 18.1 Write migration overview
   - Explain benefits of migration
   - List breaking changes
   - Provide timeline

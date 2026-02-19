@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0-beta.3] - 2025-02-19
 
-### 📚 Documentation
-
-- **Added comprehensive performance documentation** - Detailed guide covering performance improvements, memory usage, and best practices
-- **Updated README** - Added performance highlights section showcasing Nitro Modules improvements
-
 ### 🐛 Bug Fixes
 
 - **Fixed CMake version requirement** - Changed from specific 3.18.1 to minimum 3.10.2 for broader compatibility
