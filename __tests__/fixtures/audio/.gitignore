@@ -1,0 +1,13 @@
+# Ignore all audio files in this directory
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.ogg
+*.flac
+*.aiff
+*.wma
+
+# Keep the README
+!README.md
+!.gitignore

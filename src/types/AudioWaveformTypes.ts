@@ -6,6 +6,24 @@ import type {
   UpdateFrequency,
 } from '../constants';
 
+// Re-export Nitro types for convenience
+export type {
+  AudioRecorder,
+  RecordingConfig,
+} from '../../specs/AudioRecorder.nitro';
+export type {
+  AudioPlayer,
+  PlayerConfig,
+  DurationType as NitroDurationType,
+  UpdateFrequency as NitroUpdateFrequency,
+} from '../../specs/AudioPlayer.nitro';
+export type {
+  WaveformExtractor,
+  ExtractionConfig,
+} from '../../specs/WaveformExtractor.nitro';
+export type { AudioWaveform } from '../../specs/AudioWaveform.nitro';
+
+// Legacy interfaces for backward compatibility
 interface IPlayerKey {
   playerKey: string;
 }
@@ -13,6 +31,9 @@ interface IPlayerPath {
   path: string;
 }
 
+/**
+ * @deprecated Use RecordingConfig from Nitro types instead
+ */
 export interface IStartRecording extends IPlayerPath {
   encoder: number;
   sampleRate: number;
@@ -22,10 +43,16 @@ export interface IStartRecording extends IPlayerPath {
   updateFrequency?: UpdateFrequency;
 }
 
+/**
+ * @deprecated Use ExtractionConfig from Nitro types instead
+ */
 export interface IExtractWaveform extends IPlayerKey, IPlayerPath {
   noOfSamples?: number;
 }
 
+/**
+ * @deprecated Use PlayerConfig from Nitro types instead
+ */
 export interface IPreparePlayer extends IPlayerKey, IPlayerPath {
   updateFrequency?: UpdateFrequency;
   volume?: number;
@@ -38,9 +65,9 @@ export interface IStartPlayer extends IPlayerKey {
   path?: string;
 }
 
-export interface IStopPlayer extends IPlayerKey {}
+export interface IStopPlayer extends IPlayerKey { }
 
-export interface IPausePlayer extends IPlayerKey {}
+export interface IPausePlayer extends IPlayerKey { }
 
 export interface ISeekPlayer extends IPlayerKey {
   progress: number;
@@ -76,7 +103,16 @@ export interface ISetPlaybackSpeed extends IPlayerKey {
 }
 
 /**
- * Represents the interface for the AudioWaveforms module.
+ * Legacy interface for the AudioWaveforms module.
+ * 
+ * @deprecated This interface is for backward compatibility only.
+ * New code should use the Nitro Hybrid Objects (AudioRecorder, AudioPlayer, WaveformExtractor)
+ * which provide better performance and type safety.
+ * 
+ * @see AudioWaveform - Factory for creating Nitro Hybrid Objects
+ * @see AudioRecorder - Nitro-based audio recording
+ * @see AudioPlayer - Nitro-based audio playback
+ * @see WaveformExtractor - Nitro-based waveform extraction
  */
 export interface IAudioWaveforms extends NativeModule {
   // Permissions

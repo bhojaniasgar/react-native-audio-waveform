@@ -1,4 +1,4 @@
-import { HybridObject } from 'react-native-nitro-modules'
+import type { HybridObject } from 'react-native-nitro-modules'
 import type { AudioRecorder } from './AudioRecorder.nitro'
 import type { AudioPlayer } from './AudioPlayer.nitro'
 import type { WaveformExtractor } from './WaveformExtractor.nitro'

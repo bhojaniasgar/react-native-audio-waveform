@@ -18,14 +18,13 @@ import {
   type NativeTouchEvent,
 } from 'react-native';
 import {
-  DurationType,
   FinishMode,
   PermissionStatus,
   playbackSpeedThreshold,
   PlayerState,
   RecorderState,
-  UpdateFrequency,
 } from '../../constants';
+import { DurationType } from '../../../specs/AudioPlayer.nitro';
 import {
   useAudioPermission,
   useAudioPlayer,
@@ -58,11 +57,11 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     scrubColor,
     onPlayerStateChange,
     onRecorderStateChange,
-    onPanStateChange = () => {},
-    onError = (_error: Error) => {},
-    onCurrentProgressChange = () => {},
+    onPanStateChange = () => { },
+    onError = (_error: Error) => { },
+    onCurrentProgressChange = () => { },
     candleHeightScale = 3,
-    onChangeWaveformLoadState = (_state: boolean) => {},
+    onChangeWaveformLoadState = (_state: boolean) => { },
     showsHorizontalScrollIndicator = false,
   } = props as StaticWaveform & LiveWaveform;
   const viewRef = useRef<View>(null);
@@ -93,15 +92,18 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     playPlayer,
     stopPlayer,
     pausePlayer,
-    onCurrentDuration,
-    onDidFinishPlayingAudio,
-    onCurrentRecordingWaveformData,
+    onPlaybackUpdate,
+    onPlaybackFinished,
     setPlaybackSpeed,
-    markPlayerAsUnmounted,
-  } = useAudioPlayer();
+  } = useAudioPlayer({ playerKey: `PlayerFor${path}` });
 
-  const { startRecording, stopRecording, pauseRecording, resumeRecording } =
-    useAudioRecorder();
+  const {
+    startRecording,
+    stopRecording,
+    pauseRecording,
+    resumeRecording,
+    onDecibelUpdate,
+  } = useAudioRecorder();
 
   const { checkHasAudioRecorderPermission } = useAudioPermission();
 
@@ -114,7 +116,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
    */
   const updatePlaybackSpeed = async (speed: number) => {
     try {
-      await setPlaybackSpeed({ speed, playerKey: `PlayerFor${path}` });
+      await setPlaybackSpeed(speed);
     } catch (error) {
       console.error('Error updating playback speed', error);
     }
@@ -130,10 +132,8 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
       try {
         const prepare = await preparePlayer({
           path,
-          playerKey: `PlayerFor${path}`,
-          updateFrequency: UpdateFrequency.medium,
           volume: volume,
-          progress,
+          startPosition: progress,
         });
         return Promise.resolve(prepare);
       } catch (err) {
@@ -148,10 +148,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
   const getAudioDuration = async () => {
     try {
-      const duration = await getDuration({
-        playerKey: `PlayerFor${path}`,
-        durationType: DurationType.max,
-      });
+      const duration = await getDuration(DurationType.Max);
       if (!isNil(duration)) {
         const audioDuration = Number(duration);
         setSongDuration(audioDuration > 0 ? audioDuration : 0);
@@ -186,8 +183,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         onChangeWaveformLoadState(true);
         const result = await extractWaveformData({
           path: path,
-          playerKey: `PlayerFor${path}`,
-          noOfSamples: Math.max(noOfSample, 1),
+          samplesPerPixel: Math.max(noOfSample, 1),
         });
         onChangeWaveformLoadState(false);
 
@@ -213,9 +209,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   const stopPlayerAction = async (resetProgress = true) => {
     if (mode === 'static') {
       try {
-        const result = await stopPlayer({
-          playerKey: `PlayerFor${path}`,
-        });
+        const result = await stopPlayer();
         isAudioPlaying.current = false;
         if (!isNil(result) && result) {
           if (resetProgress) {
@@ -253,8 +247,6 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
         const play = await playPlayer({
           finishMode: FinishMode.stop,
-          playerKey: `PlayerFor${path}`,
-          path: path,
           speed: audioSpeed,
           ...args,
         });
@@ -286,9 +278,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
     if (mode === 'static') {
       try {
         isAudioPlaying.current = false;
-        const pause = await pausePlayer({
-          playerKey: `PlayerFor${path}`,
-        });
+        const pause = await pausePlayer();
         if (pause) {
           if (changePlayerState) {
             setPlayerState(PlayerState.paused);
@@ -452,10 +442,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
 
         if (!panMoving) {
           try {
-            await seekToPlayer({
-              playerKey: `PlayerFor${path}`,
-              progress: clampedSeekAmount * songDuration,
-            });
+            await seekToPlayer(clampedSeekAmount * songDuration);
           } catch {
             if (playerState === PlayerState.paused) {
               // If the player is not prepared, triggering the stop will reset the player for next click. Fix blocked paused player after a call to `stopAllPlayers`
@@ -479,59 +466,46 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
   }, [seekPosition, panMoving, mode, songDuration]);
 
   useEffect(() => {
-    const tracePlayerState = onDidFinishPlayingAudio(async data => {
-      if (data.playerKey === `PlayerFor${path}`) {
-        if (data.finishType === FinishMode.stop) {
-          stopPlayerAction();
-        } else if (data.finishType === FinishMode.pause) {
-          setPlayerState(PlayerState.paused);
-        }
+    // Set up playback finished callback
+    onPlaybackFinished(() => {
+      stopPlayerAction();
+    });
+
+    // Set up playback position update callback
+    onPlaybackUpdate((position) => {
+      const currentAudioDuration = Number(position);
+
+      if (!isNaN(currentAudioDuration)) {
+        setCurrentProgress(currentAudioDuration);
+      } else {
+        setCurrentProgress(0);
       }
     });
 
-    const tracePlaybackValue = onCurrentDuration(data => {
-      if (data.playerKey === `PlayerFor${path}`) {
-        const currentAudioDuration = Number(data.currentDuration);
+    // Set up recorder decibel update callback for live mode
+    if (mode === 'live') {
+      onDecibelUpdate((decibel) => {
+        if (!isNil(decibel)) {
+          setWaveform((previousWaveform: number[]) => {
+            // Add the new decibel to the waveform
+            const updatedWaveform: number[] = [
+              ...previousWaveform,
+              decibel,
+            ];
 
-        if (!isNaN(currentAudioDuration)) {
-          setCurrentProgress(currentAudioDuration);
-        } else {
-          setCurrentProgress(0);
-        }
-      }
-    });
-
-    const traceRecorderWaveformValue = onCurrentRecordingWaveformData(
-      result => {
-        if (mode === 'live') {
-          if (!isNil(result.currentDecibel)) {
-            setWaveform((previousWaveform: number[]) => {
-              // Add the new decibel to the waveform
-              const updatedWaveform: number[] = [
-                ...previousWaveform,
-                result.currentDecibel,
-              ];
-
-              // Limit the size of the waveform array to 'maxCandlesToRender'
-              return updatedWaveform.length > maxCandlesToRender
-                ? updatedWaveform.slice(1)
-                : updatedWaveform;
-            });
-            if (scrollRef.current) {
-              scrollRef.current.scrollToEnd({ animated: true });
-            }
+            // Limit the size of the waveform array to 'maxCandlesToRender'
+            return updatedWaveform.length > maxCandlesToRender
+              ? updatedWaveform.slice(1)
+              : updatedWaveform;
+          });
+          if (scrollRef.current) {
+            scrollRef.current.scrollToEnd({ animated: true });
           }
         }
-      }
-    );
-    return () => {
-      tracePlayerState.remove();
-      tracePlaybackValue.remove();
-      traceRecorderWaveformValue.remove();
-      markPlayerAsUnmounted();
-    };
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [mode, maxCandlesToRender]);
 
   useEffect(() => {
     if (!isNil(onPlayerStateChange)) {
@@ -587,7 +561,7 @@ export const Waveform = forwardRef<IWaveformRef, IWaveform>((props, ref) => {
         setPanMoving(true);
         (onPanStateChange as Function)(true);
       },
-      onPanResponderStart: () => {},
+      onPanResponderStart: () => { },
       onPanResponderMove: event => {
         setSeekPosition(event.nativeEvent);
       },

@@ -11,9 +11,9 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => "12.4" }
+  s.platforms    = { :ios => "13.0" }
   s.source       = { :git => "https://github.com/bhojaniasgar/react-native-audio-waveform", :tag => "#{s.version}" }
-  s.source_files = "ios/**/*.{h,m,mm,swift}"
+  s.source_files = "ios/**/*.{h,m,mm,swift}", "cpp/**/*.{hpp,cpp,h}"
 
   # Use install_modules_dependencies helper to install the dependencies if React Native version >=0.71.0.
   # See https://github.com/facebook/react-native/blob/febf6b7f33fdb4904669f99d795eba4c0f95d7bf/scripts/cocoapods/new_architecture.rb#L79.
@@ -36,5 +36,17 @@ Pod::Spec.new do |s|
     s.dependency "RCTTypeSafety"
     s.dependency "ReactCommon/turbomodule/core"
    end
-  end    
+  end
+
+  # Nitro Modules dependency
+  s.dependency "NitroModules"
+
+  # Enable Swift <> C++ interop for Nitro Modules
+  s.pod_target_xcconfig = {
+    'SWIFT_VERSION' => '5.9',
+    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++20',
+    'CLANG_ENABLE_MODULES' => 'YES',
+    'SWIFT_OBJC_INTEROP_MODE' => 'objcxx',
+    'DEFINES_MODULE' => 'YES'
+  }    
 end

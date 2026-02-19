@@ -1,4 +1,4 @@
-import { HybridObject } from 'react-native-nitro-modules'
+import type { HybridObject } from 'react-native-nitro-modules'
 
 /**
  * Duration type for audio player queries
